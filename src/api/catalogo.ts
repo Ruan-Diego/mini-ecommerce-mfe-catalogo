@@ -38,6 +38,9 @@ export interface Pagina<T> {
 export type Ordem = 'nome' | 'menor-preco' | 'maior-preco';
 
 export interface FiltroProdutos {
+  precoMin?: number;
+  precoMax?: number;
+  disponivel?: boolean;
   busca?: string;
   categoria?: string;
   ordem?: Ordem;
@@ -56,7 +59,7 @@ export class ErroDeApi extends Error {
 
 const baseUrl = () => (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
 
-async function obter<T>(caminho: string, params: Record<string, string | number | undefined> = {}, sinal?: AbortSignal): Promise<T> {
+async function obter<T>(caminho: string, params: Record<string, string | number | boolean | undefined> = {}, sinal?: AbortSignal): Promise<T> {
   const query = new URLSearchParams();
   for (const [chave, valor] of Object.entries(params)) {
     if (valor !== undefined && valor !== '') query.set(chave, String(valor));

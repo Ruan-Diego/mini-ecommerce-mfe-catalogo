@@ -1,0 +1,29 @@
+.lista{padding-top:var(--sp-6);padding-bottom:var(--sp-7)}
+.lista-topo{display:flex;justify-content:space-between;align-items:flex-end;gap:var(--sp-5);flex-wrap:wrap;margin-bottom:var(--sp-5)}
+.lista-topo p{margin:var(--sp-2) 0 0}
+.lista-controles{display:flex;align-items:flex-end;gap:var(--sp-3)}
+.lista-controles .field{display:flex;flex-direction:column;gap:6px}
+.lista-controles select.input{height:var(--alvo)}
+.lista-abrir-filtros{display:none}
+.lista-corpo{display:grid;grid-template-columns:260px 1fr;gap:var(--sp-6);align-items:start}
+.lista-painel-conteudo{display:flex;flex-direction:column;gap:var(--sp-5)}
+.lista-grupo{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--sp-3);min-width:0}
+.lista-chips{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+.lista-preco{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+.lista-check{display:flex;align-items:center;gap:var(--sp-3);min-height:var(--alvo)}
+.lista-check input{width:20px;height:20px;accent-color:var(--ac)}
+.lista-fechar-filtros{display:none}
+.lista-grade{list-style:none;margin:0;padding:0;display:grid;gap:var(--sp-5);grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.lista-skeleton{aspect-ratio:1/1.2;border-radius:var(--r-lg);background:var(--s1);animation:lista-pulso 1.2s ease-in-out infinite}
+@keyframes lista-pulso{50%{opacity:.5}}
+@media (prefers-reduced-motion:reduce){.lista-skeleton{animation:none}}
+.lista-aviso{display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap;padding:var(--sp-5);border:1px solid var(--line2);border-radius:var(--r-lg)}
+.lista-aviso p{margin:0}
+.lista-paginas{display:flex;justify-content:center;align-items:center;gap:var(--sp-4);margin-top:var(--sp-6)}
+@media (max-width:860px){
+  .lista-corpo{grid-template-columns:1fr}
+  .lista-abrir-filtros{display:inline-flex}
+  .lista-painel{display:none;position:fixed;left:0;right:0;bottom:0;z-index:40;max-height:80vh;overflow:auto;background:var(--s1);border-top:1px solid var(--line2);border-radius:var(--r-lg) var(--r-lg) 0 0;padding:var(--sp-5);gap:var(--sp-5);flex-direction:column}
+  .lista-painel.aberto{display:flex}
+  .lista-fechar-filtros{display:inline-flex}
+}
