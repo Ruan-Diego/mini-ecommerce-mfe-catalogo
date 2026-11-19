@@ -23,3 +23,4 @@
 .produto-card-nome{margin:var(--sp-2) 0 0}
 .produto-card-preco{margin:0;color:var(--mu)}
 .produto-card.esgotado .pimg{opacity:.55}
+.produto-card-adicionar{margin-top:var(--sp-3)}

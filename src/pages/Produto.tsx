@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAdicionarAoCarrinho } from '../barramento';
 import { Link, useParams } from 'react-router-dom';
 import { Button, Pill, ProductObject, QuantityStepper } from '@ruan-diego/mini-design-system';
 import { obterProduto, type Produto as ProdutoApi } from '../api/catalogo';
@@ -34,17 +35,18 @@ function Galeria({ produto }: { produto: ProdutoApi }) {
 
 /**
  * Compra do produto. `disponivel` vem do estoque-service quando ele existir (Fase 4); até lá a
- * página passa `true`. O clique em "Adicionar ao carrinho" emitirá `carrinho:adicionar-item`
- * na issue "Emitir carrinho:adicionar-item" (Fase 2).
+ * página passa `true`. O clique em "Adicionar ao carrinho" emite `carrinho:adicionar-item` com a quantidade
+ * escolhida; o mini-carrinho (outro MFE) abre ao ouvir o evento.
  */
 export function Compra({ produto, disponivel }: { produto: ProdutoApi; disponivel: boolean }) {
   const [quantidade, setQuantidade] = useState(1);
+  const adicionar = useAdicionarAoCarrinho();
   return (
     <div className="prod-compra">
       <p className="price prod-preco">{formatarPreco(produto.preco)}</p>
       <Pill tom={disponivel ? 'sucesso' : 'erro'}>{disponivel ? 'Em estoque' : 'Esgotado'}</Pill>
       <QuantityStepper valor={quantidade} aoMudar={setQuantidade} min={1} max={MAX_QUANTIDADE} rotulo={`Quantidade de ${produto.nome}`} />
-      <Button variante="primario" bloco disabled={!disponivel}>
+      <Button variante="primario" bloco disabled={!disponivel} onClick={() => adicionar(produto.id, quantidade)}>
         {disponivel ? 'Adicionar ao carrinho' : 'Produto esgotado'}
       </Button>
     </div>

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Pill, ProductObject, type FormaObjeto, type MaterialObjeto } from '@ruan-diego/mini-design-system';
+import { Button, Pill, ProductObject, type FormaObjeto, type MaterialObjeto } from '@ruan-diego/mini-design-system';
+import { useAdicionarAoCarrinho } from '../barramento';
 import type { Produto } from '../api/catalogo';
 
 export type Selo = 'novo' | 'ultimas-unidades' | 'esgotado';
@@ -35,6 +36,7 @@ export function ProdutoCard({ produto, selo }: Props) {
   const h = hash(produto.slug);
   const imagem = produto.imagens[0];
   const esgotado = selo === 'esgotado';
+  const adicionar = useAdicionarAoCarrinho();
   return (
     <article className={`produto-card${esgotado ? ' esgotado' : ''}`}>
       <Link to={`/produtos/${produto.slug}`} className="produto-card-link" aria-label={`${produto.nome}, ${formatarPreco(produto.preco)}${selo ? `, ${selos[selo].texto}` : ''}`}>
@@ -53,6 +55,18 @@ export function ProdutoCard({ produto, selo }: Props) {
         <h3 className="h4 produto-card-nome">{produto.nome}</h3>
         <p className="price produto-card-preco">{formatarPreco(produto.preco)}</p>
       </Link>
+      {/* Fora do <Link>: botão dentro de link é HTML inválido e o clique navegaria junto. */}
+      <Button
+        variante="secundario"
+        pequeno
+        bloco
+        className="produto-card-adicionar"
+        disabled={esgotado}
+        aria-label={esgotado ? `${produto.nome}, esgotado` : `Adicionar ${produto.nome} ao carrinho`}
+        onClick={() => adicionar(produto.id, 1)}
+      >
+        {esgotado ? 'Esgotado' : 'Adicionar'}
+      </Button>
     </article>
   );
 }
