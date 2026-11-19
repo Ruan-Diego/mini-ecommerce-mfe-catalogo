@@ -10,6 +10,6 @@ describe('mfe-catalogo', () => {
         <App basePath="/" getToken={async () => null} eventBus={criarEventBus(new EventTarget())} />
       </MemoryRouter>,
     );
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Home');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Objetos que ocupam espaço.');
   });
 });

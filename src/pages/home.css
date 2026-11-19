@@ -1,0 +1,25 @@
+.home-banner{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-4);padding-top:72px;padding-bottom:72px}
+.home-titulo{max-width:12ch}
+.home-subtitulo{margin:0;max-width:48ch;font-size:17px}
+.home-secao{padding-top:var(--sp-6);padding-bottom:var(--sp-6)}
+.home-secao-topo{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-4);margin-bottom:var(--sp-4)}
+.home-ver-todos{color:var(--mu);display:inline-flex;align-items:center;min-height:var(--alvo)}
+.home-ver-todos:hover{color:var(--tx)}
+.home-lista{list-style:none;margin:0;padding:0;display:grid;gap:var(--sp-5);grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+.home-carrossel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:var(--sp-3)}
+.home-carrossel>li{flex:0 0 240px;scroll-snap-align:start}
+.home-skeleton{aspect-ratio:1/1.2;border-radius:var(--r-lg);background:var(--s1);animation:home-pulso 1.2s ease-in-out infinite}
+@keyframes home-pulso{50%{opacity:.5}}
+@media (prefers-reduced-motion:reduce){.home-skeleton{animation:none}}
+.home-aviso{display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap;padding:var(--sp-5);border:1px solid var(--line2);border-radius:var(--r-lg)}
+.home-aviso p{margin:0}
+.home-categorias{list-style:none;margin:var(--sp-4) 0 0;padding:0;display:grid;gap:var(--sp-4);grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.home-categoria{display:flex;align-items:center;min-height:96px;padding:0 var(--sp-5);font:600 20px var(--fd);color:var(--tx);text-decoration:none}
+.home-categoria:hover{border-color:var(--ac)}
+.produto-card-link{display:flex;flex-direction:column;gap:var(--sp-2);color:var(--tx);text-decoration:none}
+.produto-card-link:focus-visible{outline:2px solid var(--ac);outline-offset:4px;border-radius:var(--r-lg)}
+.produto-card-img{width:100%;height:100%;object-fit:cover}
+.produto-card-selo{position:absolute;top:var(--sp-3);left:var(--sp-3)}
+.produto-card-nome{margin:var(--sp-2) 0 0}
+.produto-card-preco{margin:0;color:var(--mu)}
+.produto-card.esgotado .pimg{opacity:.55}
