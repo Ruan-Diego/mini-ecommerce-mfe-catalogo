@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
+import { ErroDeApi } from './catalogo';
 
 export type EstadoRecurso<T> =
   | { situacao: 'carregando' }
+  | { situacao: 'naoEncontrado'; recarregar: () => void }
   | { situacao: 'erro'; recarregar: () => void }
   | { situacao: 'pronto'; dados: T };
 
@@ -21,6 +23,10 @@ export function useRecurso<T>(buscar: (sinal: AbortSignal) => Promise<T>, chaves
       (dados) => setEstado({ chave, valor: { situacao: 'pronto', dados } }),
       (erro: unknown) => {
         if (controle.signal.aborted) return;
+        if (erro instanceof ErroDeApi && erro.status === 404) {
+          setEstado({ chave, valor: { situacao: 'naoEncontrado', recarregar } });
+          return;
+        }
         console.error('[mfe-catalogo] falha ao buscar dados', erro);
         setEstado({ chave, valor: { situacao: 'erro', recarregar } });
       },

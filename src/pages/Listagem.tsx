@@ -122,7 +122,7 @@ export function Listagem() {
               ))}
             </ul>
           )}
-          {resultado.situacao === 'erro' && (
+          {(resultado.situacao === 'erro' || resultado.situacao === 'naoEncontrado') && (
             <div className="lista-aviso" role="alert">
               <p>Não consegui carregar os produtos.</p>
               <Button variante="secundario" pequeno onClick={resultado.recarregar}>
