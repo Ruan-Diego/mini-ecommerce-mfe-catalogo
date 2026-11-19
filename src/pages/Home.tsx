@@ -60,7 +60,7 @@ function Carrossel({ titulo, produtos, selo }: CarrosselProps) {
 function SecaoProdutos({ titulo, ordem, selo }: { titulo: string; ordem: 'nome' | 'menor-preco'; selo?: Selo }) {
   const estado = useRecurso((s) => buscarProdutos({ ordem, tamanho: 8 }, s), [ordem]);
   if (estado.situacao === 'carregando') return <div className="wrap home-secao"><Skeleton quantidade={4} /></div>;
-  if (estado.situacao === 'erro') return <div className="wrap home-secao"><Erro aoTentar={estado.recarregar} /></div>;
+  if (estado.situacao === 'erro' || estado.situacao === 'naoEncontrado') return <div className="wrap home-secao"><Erro aoTentar={estado.recarregar} /></div>;
   if (estado.dados.itens.length === 0) {
     return (
       <div className="wrap home-secao">
@@ -74,7 +74,7 @@ function SecaoProdutos({ titulo, ordem, selo }: { titulo: string; ordem: 'nome' 
 function Categorias() {
   const estado = useRecurso((s) => listarCategorias(s));
   if (estado.situacao === 'carregando') return <div className="wrap home-secao"><Skeleton quantidade={4} /></div>;
-  if (estado.situacao === 'erro') return <div className="wrap home-secao"><Erro aoTentar={estado.recarregar} /></div>;
+  if (estado.situacao === 'erro' || estado.situacao === 'naoEncontrado') return <div className="wrap home-secao"><Erro aoTentar={estado.recarregar} /></div>;
   const principais = estado.dados.filter((c) => c.paiId === null);
   if (principais.length === 0) return null;
   return (

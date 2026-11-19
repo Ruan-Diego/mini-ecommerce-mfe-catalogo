@@ -1,0 +1,30 @@
+.prod{padding-top:var(--sp-5);padding-bottom:var(--sp-7)}
+.prod-trilha{color:var(--mu);font-size:14px;margin-bottom:var(--sp-5)}
+.prod-trilha a{color:var(--mu);display:inline-flex;align-items:center;min-height:var(--alvo)}
+.prod-grade{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:var(--sp-7);align-items:start}
+.prod-foto{aspect-ratio:1/1}
+.prod-miniaturas{list-style:none;margin:var(--sp-4) 0 0;padding:0;display:flex;gap:var(--sp-3);flex-wrap:wrap}
+.prod-miniatura{width:64px;height:64px;padding:0;border-radius:var(--r-sm);border:1px solid var(--line2);background:var(--s1);overflow:hidden;cursor:pointer}
+.prod-miniatura[aria-pressed="true"]{border-color:var(--ac);outline:1px solid var(--ac)}
+.prod-miniatura:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.prod-miniatura img{width:100%;height:100%;object-fit:cover}
+.prod-info{display:flex;flex-direction:column;gap:var(--sp-4)}
+.prod-info h1{margin:0}
+.prod-descricao{margin:0}
+.prod-compra{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-4);padding:var(--sp-5);border:1px solid var(--line);border-radius:var(--r-lg);background:var(--s1)}
+.prod-compra .btn{width:100%}
+.prod-compra .btn:disabled{opacity:.5;cursor:not-allowed}
+.prod-preco{margin:0;font-size:32px}
+.frete{display:flex;flex-direction:column;gap:var(--sp-3)}
+.frete-linha{display:flex;align-items:flex-end;gap:var(--sp-3);flex-wrap:wrap}
+.frete-linha .field{flex:1;min-width:180px}
+.frete-opcoes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--sp-2)}
+.prod-skeleton{aspect-ratio:2/1;border-radius:var(--r-lg);background:var(--s1);animation:prod-pulso 1.2s ease-in-out infinite}
+@keyframes prod-pulso{50%{opacity:.5}}
+@media (prefers-reduced-motion:reduce){.prod-skeleton{animation:none}}
+.prod-aviso{display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap;padding:var(--sp-5);border:1px solid var(--line2);border-radius:var(--r-lg)}
+.prod-aviso p{margin:0}
+.prod-404{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-4);padding-top:72px}
+.prod-404 h1{margin:0}
+.prod-404 p{margin:0}
+@media (max-width:860px){.prod-grade{grid-template-columns:1fr;gap:var(--sp-5)}}
