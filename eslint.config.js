@@ -21,7 +21,8 @@ export default tseslint.config(
     },
   },
   {
-    files: ['vite.config.ts', 'eslint.config.js'],
+    // Arquivos que rodam no Node: configuração, scripts e o teste Pact (que sobe o mock e grava o contrato).
+    files: ['vite.config.ts', 'eslint.config.js', 'scripts/**/*.mjs', '**/*.pact.test.ts'],
     languageOptions: { globals: { ...globals.node } },
   },
 );

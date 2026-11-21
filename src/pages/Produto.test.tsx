@@ -13,8 +13,26 @@ const base = {
   categoriaId: 'c1', ativo: true,
 };
 
-function api(status: number, corpo: unknown = base) {
-  vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(corpo), { status })));
+const EM_ESTOQUE = { produtoId: 'id-1', disponivel: 50, reservado: 0, emEstoque: true, estoqueBaixo: false };
+
+/** Resposta do estoque-service no teste: um status com corpo, ou 'rede' (o serviço não responde). */
+type RespostaEstoque = { status: number; corpo?: unknown } | 'rede';
+
+/** Gateway falso: o catálogo responde `status`/`corpo`; o estoque-service (URL com /estoque/) responde `estoque`. */
+function api(status: number, corpo: unknown = base, estoque: RespostaEstoque = { status: 200, corpo: EM_ESTOQUE }) {
+  const chamadas: string[] = [];
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url: string) => {
+      chamadas.push(url);
+      if (url.includes('/estoque/')) {
+        if (estoque === 'rede') throw new TypeError('rede fora do ar');
+        return new Response(JSON.stringify(estoque.corpo ?? {}), { status: estoque.status });
+      }
+      return new Response(JSON.stringify(corpo), { status });
+    }),
+  );
+  return chamadas;
 }
 function renderizar(slug = 'esfera-chrome') {
   return render(
@@ -49,10 +67,73 @@ describe('Produto', () => {
     renderizar();
     expect(await screen.findByRole('heading', { level: 1, name: 'Esfera Chrome' })).toBeInTheDocument();
     expect(screen.getAllByText('R$ 249,90')[0]).toBeInTheDocument();
-    expect(screen.getByText('Em estoque')).toBeInTheDocument();
+    expect(await screen.findByText('Em estoque')).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Frente' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /Ver imagem 2/ }));
     expect(screen.getByRole('img', { name: 'Lado' })).toBeInTheDocument();
+  });
+
+  it('pergunta o saldo ao estoque-service pelo id do produto', async () => {
+    const chamadas = api(200);
+    renderizar();
+    await screen.findByRole('heading', { level: 1, name: 'Esfera Chrome' });
+    await screen.findByText('Em estoque');
+    expect(chamadas.some((u) => u.endsWith('/estoque/id-1'))).toBe(true);
+  });
+
+  it('sem saldo cadastrado (404 do estoque) mostra Esgotado e desabilita a compra', async () => {
+    api(200, base, { status: 404, corpo: { title: 'Não encontrado' } });
+    renderizar();
+    expect(await screen.findByText('Esgotado')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Produto esgotado' })).toBeDisabled();
+  });
+
+  it('saldo zerado mostra Esgotado', async () => {
+    api(200, base, { status: 200, corpo: { ...EM_ESTOQUE, disponivel: 0, emEstoque: false, estoqueBaixo: true } });
+    renderizar();
+    expect(await screen.findByText('Esgotado')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Produto esgotado' })).toBeDisabled();
+  });
+
+  it('estoque baixo avisa "Últimas N unidades" e limita a quantidade ao saldo', async () => {
+    api(200, base, { status: 200, corpo: { ...EM_ESTOQUE, disponivel: 3, estoqueBaixo: true } });
+    renderizar();
+    expect(await screen.findByText('Últimas 3 unidades')).toBeInTheDocument();
+
+    const mais = screen.getByRole('button', { name: /aumentar|mais|\+/i });
+    for (let i = 0; i < 6; i++) if (!(mais as HTMLButtonElement).disabled) await userEvent.click(mais);
+    expect(screen.getByRole('group', { name: 'Quantidade de Esfera Chrome' })).toHaveTextContent('3');
+    expect(mais).toBeDisabled();
+  });
+
+  it('com uma unidade só avisa "Última unidade"', async () => {
+    api(200, base, { status: 200, corpo: { ...EM_ESTOQUE, disponivel: 1, estoqueBaixo: true } });
+    renderizar();
+    expect(await screen.findByText('Última unidade')).toBeInTheDocument();
+  });
+
+  it('estoque-service fora do ar não trava a compra (a reserva do pedido decide)', async () => {
+    api(200, base, 'rede');
+    renderizar();
+    expect(await screen.findByRole('button', { name: 'Adicionar ao carrinho' })).toBeEnabled();
+    expect(screen.getByText('Em estoque')).toBeInTheDocument();
+  });
+
+  it('enquanto o estoque não responde, o botão espera', async () => {
+    let liberar: (r: Response) => void = () => {};
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url: string) =>
+        url.includes('/estoque/')
+          ? new Promise<Response>((resolve) => (liberar = resolve))
+          : Promise.resolve(new Response(JSON.stringify(base), { status: 200 })),
+      ),
+    );
+    renderizar();
+
+    expect(await screen.findByRole('button', { name: 'Verificando estoque…' })).toBeDisabled();
+    liberar(new Response(JSON.stringify(EM_ESTOQUE), { status: 200 }));
+    expect(await screen.findByRole('button', { name: 'Adicionar ao carrinho' })).toBeEnabled();
   });
 
   it('produto inexistente mostra 404 com link para a vitrine', async () => {

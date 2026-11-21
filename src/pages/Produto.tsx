@@ -3,6 +3,7 @@ import { useAdicionarAoCarrinho } from '../barramento';
 import { Link, useParams } from 'react-router-dom';
 import { Button, Pill, ProductObject, QuantityStepper } from '@ruan-diego/mini-design-system';
 import { obterProduto, type Produto as ProdutoApi } from '../api/catalogo';
+import { consultarDisponibilidade } from '../api/estoque';
 import { useRecurso } from '../api/useRecurso';
 import { SimuladorFrete } from '../components/SimuladorFrete';
 import { formatarPreco } from '../components/ProdutoCard';
@@ -33,24 +34,59 @@ function Galeria({ produto }: { produto: ProdutoApi }) {
   );
 }
 
+interface PropsCompra {
+  produto: ProdutoApi;
+  disponivel: boolean;
+  /** Saldo vendável, quando o estoque respondeu: limita a quantidade e alimenta o aviso de últimas unidades. */
+  unidades?: number;
+  /** O estoque-service ainda não respondeu: o botão espera. */
+  verificando?: boolean;
+  /** O estoque-service diz que o saldo está baixo (o limite é dele; aqui só muda o texto). */
+  estoqueBaixo?: boolean;
+}
+
 /**
- * Compra do produto. `disponivel` vem do estoque-service quando ele existir (Fase 4); até lá a
- * página passa `true`. O clique em "Adicionar ao carrinho" emite `carrinho:adicionar-item` com a quantidade
- * escolhida; o mini-carrinho (outro MFE) abre ao ouvir o evento.
+ * Compra do produto. `disponivel` e `unidades` vêm do estoque-service (ver CompraComEstoque). O clique em
+ * "Adicionar ao carrinho" emite `carrinho:adicionar-item` com a quantidade escolhida; o mini-carrinho (outro MFE)
+ * abre ao ouvir o evento.
  */
-export function Compra({ produto, disponivel }: { produto: ProdutoApi; disponivel: boolean }) {
+export function Compra({ produto, disponivel, unidades, verificando = false, estoqueBaixo = false }: PropsCompra) {
   const [quantidade, setQuantidade] = useState(1);
   const adicionar = useAdicionarAoCarrinho();
+  const maximo = Math.max(1, Math.min(MAX_QUANTIDADE, unidades ?? MAX_QUANTIDADE));
+  const podeComprar = disponivel && !verificando;
+
+  let selo = <Pill tom="sucesso">Em estoque</Pill>;
+  if (verificando) selo = <Pill>Verificando estoque…</Pill>;
+  else if (!disponivel) selo = <Pill tom="erro">Esgotado</Pill>;
+  else if (estoqueBaixo && unidades !== undefined) {
+    selo = <Pill tom="aviso">{unidades === 1 ? 'Última unidade' : `Últimas ${unidades} unidades`}</Pill>;
+  }
+
   return (
     <div className="prod-compra">
       <p className="price prod-preco">{formatarPreco(produto.preco)}</p>
-      <Pill tom={disponivel ? 'sucesso' : 'erro'}>{disponivel ? 'Em estoque' : 'Esgotado'}</Pill>
-      <QuantityStepper valor={quantidade} aoMudar={setQuantidade} min={1} max={MAX_QUANTIDADE} rotulo={`Quantidade de ${produto.nome}`} />
-      <Button variante="primario" bloco disabled={!disponivel} onClick={() => adicionar(produto.id, quantidade)}>
-        {disponivel ? 'Adicionar ao carrinho' : 'Produto esgotado'}
+      {selo}
+      <QuantityStepper valor={Math.min(quantidade, maximo)} aoMudar={setQuantidade} min={1} max={maximo} rotulo={`Quantidade de ${produto.nome}`} />
+      <Button variante="primario" bloco disabled={!podeComprar} onClick={() => adicionar(produto.id, Math.min(quantidade, maximo))}>
+        {verificando ? 'Verificando estoque…' : disponivel ? 'Adicionar ao carrinho' : 'Produto esgotado'}
       </Button>
     </div>
   );
+}
+
+/**
+ * Pergunta o saldo ao estoque-service. Sem saldo cadastrado (404) o produto está esgotado. Se o estoque-service
+ * estiver fora do ar a compra não trava: a vitrine mostra como disponível, e quem decide de verdade é a reserva do
+ * pedido (que cancela o pedido se faltar).
+ */
+function CompraComEstoque({ produto }: { produto: ProdutoApi }) {
+  const estoque = useRecurso((s) => consultarDisponibilidade(produto.id, s), [produto.id]);
+  if (estoque.situacao === 'carregando') return <Compra produto={produto} disponivel verificando />;
+  if (estoque.situacao === 'naoEncontrado') return <Compra produto={produto} disponivel={false} />;
+  if (estoque.situacao === 'erro') return <Compra produto={produto} disponivel />;
+  const { emEstoque, disponivel, estoqueBaixo } = estoque.dados;
+  return <Compra produto={produto} disponivel={emEstoque} unidades={disponivel} estoqueBaixo={estoqueBaixo} />;
 }
 
 export function Produto() {
@@ -97,7 +133,7 @@ export function Produto() {
           <span className="eyebrow">SKU {produto.sku}</span>
           <h1 className="h2">{produto.nome}</h1>
           <p className="muted prod-descricao">{produto.descricao}</p>
-          <Compra produto={produto} disponivel />
+          <CompraComEstoque produto={produto} />
           <SimuladorFrete />
         </div>
       </div>
