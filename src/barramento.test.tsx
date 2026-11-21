@@ -126,7 +126,11 @@ describe('carrinho:adicionar-item no detalhe', () => {
 
 describe('o ./App usa o eventBus que o shell entrega', () => {
   it('a página de detalhe emite no bus recebido em props', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(produto), { status: 200 })));
+    const emEstoque = { produtoId: produto.id, disponivel: 50, reservado: 0, emEstoque: true, estoqueBaixo: false };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => new Response(JSON.stringify(url.includes('/estoque/') ? emEstoque : produto), { status: 200 })),
+    );
     const { eventBus, emitidos } = barramento();
     render(
       <MemoryRouter initialEntries={['/produtos/esfera-chrome']}>
